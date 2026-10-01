@@ -111,11 +111,11 @@ export default function GallerySection({
           className="mb-16 text-center"
         >
           <h2 className="text-4xl md:text-5xl font-bold mb-4">
-            <span className="bg-gradient-to-r from-red-600 via-orange-600 to-green-600 bg-clip-text text-transparent">
+            <span className="text-[#2f3e5c]">
               {title}
             </span>
           </h2>
-          <div className="w-32 h-1.5 bg-gradient-to-r from-red-500 via-orange-500 to-green-500 rounded-full mx-auto mb-4" />
+          <div className="w-32 h-1.5 bg-[linear-gradient(to_right,#2f3e5c,#b3203a,#b8693a)] rounded-full mx-auto mb-4" />
           <p className="text-lg text-gray-700 max-w-2xl mx-auto font-medium">
             {subtitle}
           </p>
@@ -126,7 +126,7 @@ export default function GallerySection({
             {[1, 2, 3, 4, 5, 6].map((i) => (
               <div
                 key={i}
-                className="aspect-square rounded-2xl bg-gradient-to-br from-red-100 via-orange-100 to-green-100 animate-pulse"
+                className="aspect-square rounded-2xl bg-gradient-to-br from-[#2f3e5c]/10 via-[#b3203a]/10 to-[#b8693a]/10 animate-pulse"
               />
             ))}
           </div>
@@ -250,7 +250,7 @@ export default function GallerySection({
                       }}
                       className={`w-14 h-14 rounded-lg overflow-hidden border-2 transition-all shrink-0 ${
                         idx === activePhotoIndex
-                          ? "border-orange-500 scale-105"
+                          ? "border-[#b3203a] scale-105"
                           : "border-white/30 opacity-70 hover:opacity-100"
                       }`}
                     >

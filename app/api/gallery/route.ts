@@ -2,49 +2,57 @@ import { NextResponse } from "next/server";
 import fs from "fs";
 import path from "path";
 
-// Folders under /public/images that represent gallery albums.
-// Add or remove folder names here as albums are added/retired —
-// this list controls which folders the gallery looks for and in
-// what order they're returned.
-const ALBUM_FOLDERS = [
-  "bmi",
-  "emergency-preparedness",
-  "meeting",
-  "school-inspection",
-  "senior-citizen-opening",
-  "sayaw-kabataan-2026",
-];
+// Always read the folder at request time (don't cache an empty result)
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 
-const IMAGE_EXTENSIONS = [".jpg", ".jpeg", ".png", ".webp"];
+const IMAGE_EXT = /\.(jpe?g|png|webp|gif|avif)$/i;
+// Folders inside /public/images that are NOT albums
+const IGNORE_FOLDERS = new Set(["logo", "logos", "icons"]);
 
 export async function GET() {
-  const imagesRoot = path.join(process.cwd(), "public", "images");
+  try {
+    const imagesDir = path.join(process.cwd(), "public", "images");
 
-  const albums = ALBUM_FOLDERS.map((folder) => {
-    const folderPath = path.join(imagesRoot, folder);
-
-    let files: string[] = [];
-    try {
-      files = fs
-        .readdirSync(folderPath)
-        .filter((f) => IMAGE_EXTENSIONS.includes(path.extname(f).toLowerCase()))
-        // Numeric-aware sort so 1,2,10 order correctly instead of 1,10,2
-        .sort((a, b) => {
-          const numA = parseInt(a, 10);
-          const numB = parseInt(b, 10);
-          if (!isNaN(numA) && !isNaN(numB)) return numA - numB;
-          return a.localeCompare(b);
-        });
-    } catch {
-      // Folder doesn't exist yet or isn't readable — treat as empty
-      files = [];
+    if (!fs.existsSync(imagesDir)) {
+      return NextResponse.json({
+        success: false,
+        message: `Folder not found: ${imagesDir}`,
+        albums: [],
+      });
     }
 
-    return {
-      folder,
-      images: files.map((f) => `/images/${folder}/${f}`),
-    };
-  }).filter((album) => album.images.length > 0); // drop empty albums
+    const albums = fs
+      .readdirSync(imagesDir, { withFileTypes: true })
+      .filter((d) => d.isDirectory() && !IGNORE_FOLDERS.has(d.name))
+      .map((dir) => {
+        const files = fs
+          .readdirSync(path.join(imagesDir, dir.name))
+          .filter((f) => IMAGE_EXT.test(f))
+          .sort((a, b) =>
+            a.localeCompare(b, undefined, {
+              numeric: true,
+              sensitivity: "base",
+            }),
+          );
 
-  return NextResponse.json({ success: true, albums });
+        return {
+          folder: dir.name,
+          // public/ is served from the site root, so no "public" in the URL
+          images: files.map(
+            (f) =>
+              `/images/${encodeURIComponent(dir.name)}/${encodeURIComponent(f)}`,
+          ),
+        };
+      })
+      .filter((a) => a.images.length > 0);
+
+    return NextResponse.json({ success: true, albums });
+  } catch (error) {
+    console.error("[api/gallery]", error);
+    return NextResponse.json(
+      { success: false, message: "Failed to read gallery", albums: [] },
+      { status: 500 },
+    );
+  }
 }
