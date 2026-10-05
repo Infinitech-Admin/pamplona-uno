@@ -110,7 +110,11 @@ export default function AdminNewsPage() {
       label: "Business",
       color: "bg-blue-100 text-blue-700",
     },
-    { value: "Health", label: "Health", color: "bg-brand-primary-100 text-brand-primary-700" },
+    {
+      value: "Health",
+      label: "Health",
+      color: "bg-brand-primary-100 text-brand-primary-700",
+    },
     {
       value: "Education",
       label: "Education",
@@ -919,7 +923,8 @@ export default function AdminNewsPage() {
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Category <span className="text-brand-primary-500">*</span>
+                        Category{" "}
+                        <span className="text-brand-primary-500">*</span>
                       </label>
                       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                         {categories.map((cat) => (
@@ -943,7 +948,8 @@ export default function AdminNewsPage() {
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Content <span className="text-brand-primary-500">*</span>
+                        Content{" "}
+                        <span className="text-brand-primary-500">*</span>
                       </label>
                       <textarea
                         value={formData.content}
@@ -1002,7 +1008,8 @@ export default function AdminNewsPage() {
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Status <span className="text-brand-primary-500">*</span>
+                          Status{" "}
+                          <span className="text-brand-primary-500">*</span>
                         </label>
                         <select
                           value={formData.status}

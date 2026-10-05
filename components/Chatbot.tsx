@@ -11,6 +11,535 @@ interface Message {
   quickReplies?: string[];
 }
 
+/*
+|--------------------------------------------------------------------------
+| BARANGAY DATA  (edit this block to keep the chatbot up to date)
+|--------------------------------------------------------------------------
+| Sources: PSA 2024 POPCEN / PSGC, BetterLasPinas.org barangay + hotline
+| directory, Waze listing for the barangay hall, barangaydirectory.com.
+| Items marked VERIFY could not be confirmed online - replace with the
+| official information from the barangay office.
+*/
+const BRGY = {
+  name: "Barangay Pamplona Uno",
+  city: "Las Piñas City, Metro Manila",
+  hallAddress: "Alabang-Zapote Road corner Trinidad, Las Piñas City 1740",
+  phone: "(02) 8871-2771",
+  altPhone: "(02) 8403-1882",
+  captain: "Hon. Reinier S. Salvador",
+  secretary: "Romeo F. Soriano Jr.",
+  treasurer: "Jose C. Miranda",
+  skChair: "Hannah Joy M. Magdales",
+  officialsTerm: "2023–2026 term",
+  population2024: "19,658",
+  population2020: "19,085",
+  psgc: "137601006",
+  neighbors: "Pamplona Tres, Pamplona Dos, and Zapote",
+  mayor: "Mayor April Aguilar-Nery",
+  // VERIFY: typical LGU schedule, not confirmed for this barangay hall
+  officeHours: "Monday to Friday, 8:00 AM – 5:00 PM",
+};
+
+const CITY_HOTLINES = {
+  commandCenter: "8290-6500",
+  police: "8551-6401",
+  fire: "8874-6177",
+  cdrrmo: "8290-6500",
+  cityHealth: "8367-3406",
+  mayorsOffice: "8871-4343",
+};
+
+const MAIN_MENU = [
+  "Barangay Services",
+  "Requirements",
+  "Office Hours",
+  "Contact Us",
+  "Emergency",
+  "About Pamplona Uno",
+];
+
+const bot = (text: string, quickReplies?: string[]): Message => ({
+  type: "bot",
+  text,
+  quickReplies,
+});
+
+const VERIFY_NOTE =
+  "Requirements and fees can change, so please confirm with the barangay hall " +
+  `at ${BRGY.phone} before you visit.`;
+
+/*
+|--------------------------------------------------------------------------
+| RESPONSE RULES
+|--------------------------------------------------------------------------
+| Rules are checked in order, first match wins. Patterns use whole-word
+| matching so "hi" no longer triggers on words like "this" or "which".
+*/
+interface Rule {
+  patterns: RegExp[];
+  respond: () => Message;
+}
+
+const RULES: Rule[] = [
+  {
+    patterns: [/\b(thank|thanks|salamat)\b/],
+    respond: () =>
+      bot(
+        "Walang anuman! 😊\n\n" +
+          `I'm glad I could help. If you have another question about ${BRGY.name}, feel free to ask anytime.`,
+        ["Barangay Services", "Contact Us", "Office Hours", "Emergency"],
+      ),
+  },
+
+  {
+    patterns: [
+      /\b(emergency|hotline|hotlines|urgent|fire|ambulance|police|sunog|saklolo|tulong)\b/,
+    ],
+    respond: () =>
+      bot(
+        "🚨 Emergency Assistance\n\n" +
+          "For life-threatening emergencies, call 911 first.\n\n" +
+          "Las Piñas City hotlines:\n" +
+          `• Command Center: ${CITY_HOTLINES.commandCenter}\n` +
+          `• Police Station: ${CITY_HOTLINES.police}\n` +
+          `• Fire Station: ${CITY_HOTLINES.fire}\n` +
+          `• CDRRMO (disaster response): ${CITY_HOTLINES.cdrrmo}\n` +
+          `• City Health Office: ${CITY_HOTLINES.cityHealth}\n\n` +
+          `${BRGY.name} Hall: ${BRGY.phone}\n` +
+          "For local assistance, incident reports, and mediation.",
+        ["Contact Us", "Blotter", "Health Services", "Office Hours"],
+      ),
+  },
+
+  {
+    patterns: [/\bclearance\b/],
+    respond: () =>
+      bot(
+        "📋 Barangay Clearance\n\n" +
+          "Barangay clearances are issued at your own barangay hall. " +
+          "It is commonly requested for employment, business, school, and other official transactions.\n\n" +
+          "You will usually be asked for:\n" +
+          "• Valid government-issued ID\n" +
+          "• Proof that you live in Pamplona Uno\n" +
+          "• Cedula, when required\n" +
+          "• The purpose of the clearance\n" +
+          "• Processing fee, if applicable\n\n" +
+          VERIFY_NOTE,
+        ["Requirements", "Office Hours", "Visit Us", "Business Permit"],
+      ),
+  },
+
+  {
+    patterns: [/\bresidency\b/, /\bresidence\b/, /\bproof of residen/],
+    respond: () =>
+      bot(
+        "🏠 Certificate of Residency\n\n" +
+          "This certifies that a person lives within the barangay and is " +
+          `issued at the ${BRGY.name} hall.\n\n` +
+          "You may be asked for:\n" +
+          "• Valid ID\n" +
+          "• Proof of address (for example a utility bill or lease)\n" +
+          "• The purpose of the certificate\n\n" +
+          VERIFY_NOTE,
+        ["Barangay Clearance", "Requirements", "Office Hours", "Visit Us"],
+      ),
+  },
+
+  {
+    patterns: [/\bindigency\b/, /\bindigent\b/],
+    respond: () =>
+      bot(
+        "📄 Certificate of Indigency\n\n" +
+          "A Certificate of Indigency may be issued to qualified residents who " +
+          "need it for medical, educational, legal, or other social assistance.\n\n" +
+          "Possible requirements:\n" +
+          "• Valid ID\n" +
+          "• Proof of residency\n" +
+          "• Purpose of the request\n" +
+          "• Supporting documents, when applicable\n\n" +
+          "The barangay may verify your situation before issuing it. " +
+          VERIFY_NOTE,
+        ["Health Services", "Requirements", "Office Hours", "Contact Us"],
+      ),
+  },
+
+  {
+    patterns: [/\bgood moral\b/, /\bmoral character\b/],
+    respond: () =>
+      bot(
+        "✅ Certificate of Good Moral Character\n\n" +
+          "Often requested for employment, school, or other applications.\n\n" +
+          "You may be asked for:\n" +
+          "• Valid ID\n" +
+          "• Proof of residency\n" +
+          "• The purpose of the request\n" +
+          "• A check of barangay records\n\n" +
+          VERIFY_NOTE,
+        ["Barangay Clearance", "Requirements", "Office Hours"],
+      ),
+  },
+
+  {
+    patterns: [/\bbusiness\b/, /\bpermit\b/, /\bnegosyo\b/, /\bstore\b/],
+    respond: () =>
+      bot(
+        "🏢 Business Permit Assistance\n\n" +
+          "A barangay clearance for business is one of the documents needed " +
+          "before a business permit can be processed. The permit itself is " +
+          "issued by Las Piñas City Hall, not the barangay.\n\n" +
+          "For the barangay clearance, bring:\n" +
+          "• Valid ID of the owner\n" +
+          "• Proof of business location\n" +
+          "• Business registration documents (DTI/SEC), if available\n\n" +
+          `City Hall is on Alabang-Zapote Road, Pamplona Tres. Mayor's Office: ${CITY_HOTLINES.mayorsOffice}.\n\n` +
+          VERIFY_NOTE,
+        ["Barangay Clearance", "Requirements", "Office Hours", "Contact Us"],
+      ),
+  },
+
+  {
+    patterns: [/\bbarangay id\b/, /\bbrgy id\b/, /\bbarangay identification\b/],
+    respond: () =>
+      bot(
+        "🪪 Barangay ID\n\n" +
+          "Barangay IDs are handled at your own barangay hall. " +
+          "Bring a valid ID and proof that you live in Pamplona Uno.\n\n" +
+          "Other requirements may apply, so " +
+          `please call ${BRGY.phone} first.`,
+        ["Requirements", "Office Hours", "Visit Us"],
+      ),
+  },
+
+  {
+    patterns: [/\bcedula\b/, /\bcommunity tax\b/],
+    respond: () =>
+      bot(
+        "📄 Cedula / Community Tax Certificate\n\n" +
+          "Cedulas are generally issued by the City Treasurer's Office of Las Piñas. " +
+          "Some barangays assist with this, so ask the barangay hall whether " +
+          "it is available here.\n\n" +
+          "Bring a valid ID and your basic information (TIN and income details, if applicable).",
+        ["Contact Us", "Visit Us", "Barangay Services"],
+      ),
+  },
+
+  {
+    patterns: [/\bblotter\b/, /\bincident\b/, /\breport\b/, /\bcomplaint\b/],
+    respond: () =>
+      bot(
+        "📝 Barangay Blotter & Incident Reports\n\n" +
+          "Residents can report incidents or concerns to the barangay so they " +
+          "can be recorded, assessed, or referred to the proper office.\n\n" +
+          "Bring:\n" +
+          "• Valid ID\n" +
+          "• Details of the incident (who, what, when, where)\n" +
+          "• Any evidence or documents you have\n\n" +
+          "🚨 If someone is in danger, call 911 right away.",
+        ["Emergency", "Mediation", "Contact Us", "Office Hours"],
+      ),
+  },
+
+  {
+    patterns: [
+      /\bmediation\b/,
+      /\blupon\b/,
+      /\bdispute\b/,
+      /\bkatarungan\b/,
+      /\baway\b/,
+    ],
+    respond: () =>
+      bot(
+        "⚖️ Community Mediation\n\n" +
+          "Under the Katarungang Pambarangay system, barangays help neighbors " +
+          "settle many disputes through mediation before they go to court.\n\n" +
+          "Examples: disputes between neighbors, boundary or property " +
+          "disagreements, and other community conflicts.\n\n" +
+          "Visit the barangay hall to file your concern and learn the procedure.",
+        ["Blotter", "Office Hours", "Visit Us", "Contact Us"],
+      ),
+  },
+
+  {
+    patterns: [
+      /\bhealth\b/,
+      /\bmedical\b/,
+      /\bclinic\b/,
+      /\bdoctor\b/,
+      /\bhospital\b/,
+      /\bospital\b/,
+    ],
+    respond: () =>
+      bot(
+        "🏥 Health Services\n\n" +
+          "For health concerns, you can reach:\n" +
+          `• Las Piñas City Health Office: ${CITY_HOTLINES.cityHealth}\n` +
+          `• ${BRGY.name} Hall: ${BRGY.phone} (ask about health programs and referrals)\n\n` +
+          "A Certificate of Indigency from the barangay can help when applying " +
+          "for medical assistance.\n\n" +
+          "For medical emergencies, call 911.",
+        ["Indigency Certificate", "Emergency", "Contact Us"],
+      ),
+  },
+
+  {
+    patterns: [
+      /\bsenior\b/,
+      /\belderly\b/,
+      /\bpwd\b/,
+      /\bdisabilit/,
+      /\bmatanda\b/,
+    ],
+    respond: () =>
+      bot(
+        "👴 Senior Citizen & PWD Assistance\n\n" +
+          "Senior citizens and persons with disabilities can ask the barangay " +
+          "hall for help with registration, referrals, and information on " +
+          "government benefits and city programs.\n\n" +
+          "Bring a valid ID, proof of residency, and any supporting documents " +
+          "(for example a medical certificate for PWD applications).\n\n" +
+          `Call ${BRGY.phone} to ask about current schedules.`,
+        ["Requirements", "Office Hours", "Contact Us"],
+      ),
+  },
+
+  {
+    patterns: [
+      /\bofficials?\b/,
+      /\bcaptain\b/,
+      /\bkapitan\b/,
+      /\bpunong\b/,
+      /\bkagawad\b/,
+      /\bsecretary\b/,
+      /\btreasurer\b/,
+      /\bchairperson\b/,
+      /\bsk\b/,
+      /\bsalvador\b/,
+    ],
+    respond: () =>
+      bot(
+        `🏛️ ${BRGY.name} Officials (${BRGY.officialsTerm})\n\n` +
+          `• Punong Barangay: ${BRGY.captain}\n` +
+          `• Barangay Secretary: ${BRGY.secretary}\n` +
+          `• Barangay Treasurer: ${BRGY.treasurer}\n` +
+          `• SK Chairperson: ${BRGY.skChair}\n\n` +
+          "The barangay is also served by seven Sangguniang Barangay members (kagawads).\n\n" +
+          "Listings may not reflect recent changes, so please confirm at the barangay hall.",
+        ["Contact Us", "About Pamplona Uno", "Barangay Services"],
+      ),
+  },
+
+  {
+    patterns: [
+      /\bhours?\b/,
+      /\bopen\b/,
+      /\bopening\b/,
+      /\bclosing\b/,
+      /\bschedule\b/,
+      /\boras\b/,
+      /\bbukas\b/,
+      /\btime\b/,
+    ],
+    respond: () =>
+      bot(
+        "🕐 Office Hours\n\n" +
+          `${BRGY.officeHours}\n\n` +
+          "Hours may differ on holidays, during barangay activities, or for " +
+          `special services. Please call ${BRGY.phone} to confirm.\n\n` +
+          "For emergencies outside office hours, call 911.",
+        ["Contact Us", "Visit Us", "Barangay Services", "Emergency"],
+      ),
+  },
+
+  {
+    patterns: [
+      /\bvisit\b/,
+      /\blocation\b/,
+      /\blocated\b/,
+      /\baddress\b/,
+      /\bwhere\b/,
+      /\bsaan\b/,
+      /\bdirections?\b/,
+      /\bmap\b/,
+      /\bhall\b/,
+    ],
+    respond: () =>
+      bot(
+        `📍 ${BRGY.name} Hall\n\n` +
+          `${BRGY.hallAddress}\n` +
+          `${BRGY.city}\n\n` +
+          `☎️ ${BRGY.phone}\n\n` +
+          "Residents can visit for inquiries, document requests, and community concerns. " +
+          "Bring a valid ID.",
+        ["Office Hours", "Contact Us", "Barangay Services"],
+      ),
+  },
+
+  {
+    patterns: [
+      /\bcontact\b/,
+      /\bphone\b/,
+      /\bcall\b/,
+      /\bnumber\b/,
+      /\btelephone\b/,
+      /\bemail\b/,
+      /\btawag\b/,
+    ],
+    respond: () =>
+      bot(
+        `📞 Contact ${BRGY.name}\n\n` +
+          `☎️ Telephone: ${BRGY.phone}\n` +
+          `☎️ Other listed line: ${BRGY.altPhone}\n\n` +
+          `📍 ${BRGY.hallAddress}\n\n` +
+          "You can also send a message through the contact form on this website.\n\n" +
+          "For emergencies, call 911.",
+        ["Office Hours", "Visit Us", "Emergency", "Barangay Services"],
+      ),
+  },
+
+  {
+    patterns: [
+      /\bfees?\b/,
+      /\bmagkano\b/,
+      /\bcost\b/,
+      /\bprice\b/,
+      /\bbayad\b/,
+    ],
+    respond: () =>
+      bot(
+        "💳 Fees\n\n" +
+          "Fees depend on the document or service and are set by the barangay " +
+          "and city. I don't have a confirmed fee list, so please ask the " +
+          `barangay hall at ${BRGY.phone} for the current amount.`,
+        ["Requirements", "Contact Us", "Visit Us"],
+      ),
+  },
+
+  {
+    patterns: [
+      /\brequirements?\b/,
+      /\bdocuments?\b/,
+      /\bpapers?\b/,
+      /\bkailangan\b/,
+      /\bbring\b/,
+    ],
+    respond: () =>
+      bot(
+        "📑 General Requirements\n\n" +
+          "Most barangay documents ask for:\n" +
+          "• Valid government-issued ID\n" +
+          "• Proof of residency in Pamplona Uno\n" +
+          "• Cedula, when required\n" +
+          "• The purpose of the request\n" +
+          "• Supporting documents for the specific service\n\n" +
+          "You can also submit requests online through your account on this website, where available.\n\n" +
+          VERIFY_NOTE,
+        [
+          "Barangay Clearance",
+          "Residency Certificate",
+          "Indigency Certificate",
+          "Good Moral Certificate",
+        ],
+      ),
+  },
+
+  {
+    patterns: [/\bservices?\b/, /\bserbisyo\b/],
+    respond: () =>
+      bot(
+        "🏛️ Barangay Services\n\n" +
+          "Barangay-level services in Las Piñas, such as clearances, IDs, and " +
+          "certificates of residency, are handled at your own barangay hall. " +
+          "At Pamplona Uno these include:\n\n" +
+          "📋 Barangay Clearance\n" +
+          "🏠 Certificate of Residency\n" +
+          "📄 Certificate of Indigency\n" +
+          "✅ Certificate of Good Moral Character\n" +
+          "🪪 Barangay ID\n" +
+          "🏢 Business clearance for permit applications\n" +
+          "📝 Blotter and incident reports\n" +
+          "⚖️ Mediation of community disputes\n" +
+          "👴 Senior citizen and PWD assistance\n\n" +
+          "Tap a service to see what to bring.",
+        [
+          "Barangay Clearance",
+          "Residency Certificate",
+          "Indigency Certificate",
+          "Good Moral Certificate",
+          "Business Permit",
+          "Blotter",
+          "Mediation",
+          "Senior & PWD",
+        ],
+      ),
+  },
+
+  {
+    patterns: [
+      /\babout\b/,
+      /\bpamplona\b/,
+      /\bpopulation\b/,
+      /\bresidents\b/,
+      /\bhistory\b/,
+      /\bboundary\b/,
+      /\bborders?\b/,
+      /\blas pi[nñ]as\b/,
+    ],
+    respond: () =>
+      bot(
+        `🏘️ About ${BRGY.name}\n\n` +
+          `${BRGY.name} is one of the 20 barangays of Las Piñas City, Metro Manila.\n\n` +
+          `• Population: ${BRGY.population2024} (2024 PSA census), up from ${BRGY.population2020} in 2020\n` +
+          `• Neighboring barangays: ${BRGY.neighbors}\n` +
+          `• Postal code: 1740\n` +
+          `• PSGC code: ${BRGY.psgc}\n` +
+          `• Led by Punong Barangay ${BRGY.captain.replace("Hon. ", "")}\n` +
+          `• City Mayor: ${BRGY.mayor}\n\n` +
+          "Las Piñas is best known for the historic Bamboo Organ at St. Joseph Parish Church.",
+        ["Barangay Officials", "Barangay Services", "Visit Us", "Contact Us"],
+      ),
+  },
+
+  {
+    patterns: [
+      /\b(hello|hi|hey|kumusta|musta)\b/,
+      /\bmagandang (umaga|hapon|gabi)\b/,
+      /\bgood (morning|afternoon|evening)\b/,
+    ],
+    respond: () =>
+      bot(
+        "Hello! 👋 Kumusta!\n\n" +
+          `I'm the ${BRGY.name} Citizen Assistant. I can help with barangay ` +
+          "services, requirements, office hours, contact details, and emergency numbers.\n\n" +
+          "How may I assist you today?",
+        MAIN_MENU,
+      ),
+  },
+];
+
+const getBotResponse = (message: string): Message => {
+  const text = message.toLowerCase().trim();
+
+  for (const rule of RULES) {
+    if (rule.patterns.some((pattern) => pattern.test(text))) {
+      return rule.respond();
+    }
+  }
+
+  return bot(
+    "Thank you for reaching out! 😊\n\n" +
+      "I'm not sure I understood that, but I can help with:\n\n" +
+      "🏛️ Barangay services and requirements\n" +
+      "🕐 Office hours and location\n" +
+      "📞 Contact information\n" +
+      "🏛️ Barangay officials\n" +
+      "🏥 Health and senior/PWD assistance\n" +
+      "⚖️ Blotter and mediation\n" +
+      "🚨 Emergency numbers\n\n" +
+      "Please choose a topic below or try rephrasing your question.",
+    MAIN_MENU,
+  );
+};
+
 export default function Chatbot() {
   const pathname = usePathname();
 
@@ -18,21 +547,13 @@ export default function Chatbot() {
   const [showPromoMessage, setShowPromoMessage] = useState(true);
 
   const [messages, setMessages] = useState<Message[]>([
-    {
-      type: "bot",
-      text:
-        "Hello! 👋 Welcome to the Pamplona Uno Citizen Assistant.\n\n" +
-        "I can help you find information about barangay services, documents, office hours, community programs, and contact details.\n\n" +
+    bot(
+      "Hello! 👋 Welcome to the Pamplona Uno Citizen Assistant.\n\n" +
+        "I can help you find information about barangay services, requirements, " +
+        "office hours, officials, and contact details.\n\n" +
         "What would you like to know?",
-      quickReplies: [
-        "Barangay Services",
-        "Requirements",
-        "Office Hours",
-        "Contact Us",
-        "Emergency",
-        "About Pamplona Uno",
-      ],
-    },
+      MAIN_MENU,
+    ),
   ]);
 
   const [inputMessage, setInputMessage] = useState("");
@@ -81,729 +602,6 @@ export default function Chatbot() {
 
   const handleQuickReply = (reply: string) => {
     handleSendMessage(reply);
-  };
-
-  const getBotResponse = (message: string): Message => {
-    const lowerMessage = message.toLowerCase().trim();
-
-    /*
-    |--------------------------------------------------------------------------
-    | GREETINGS
-    |--------------------------------------------------------------------------
-    */
-    if (
-      lowerMessage.includes("hello") ||
-      lowerMessage.includes("hi") ||
-      lowerMessage.includes("hey") ||
-      lowerMessage.includes("kumusta") ||
-      lowerMessage.includes("musta")
-    ) {
-      return {
-        type: "bot",
-        text:
-          "Hello! 👋 Kumusta!\n\n" +
-          "I'm the Pamplona Uno Citizen Assistant. " +
-          "I can help you with barangay services, requirements, schedules, " +
-          "community programs, and other general inquiries.\n\n" +
-          "How may I assist you today?",
-        quickReplies: [
-          "Barangay Services",
-          "Requirements",
-          "Office Hours",
-          "Contact Us",
-          "Emergency",
-        ],
-      };
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | ABOUT BARANGAY
-    |--------------------------------------------------------------------------
-    */
-    if (
-      lowerMessage.includes("about") ||
-      lowerMessage.includes("pamplona uno") ||
-      lowerMessage.includes("barangay information")
-    ) {
-      return {
-        type: "bot",
-        text:
-          "🏘️ About Barangay Pamplona Uno\n\n" +
-          "Barangay Pamplona Uno is a community in Las Piñas City, Metro Manila. " +
-          "The barangay serves residents through local programs, public services, " +
-          "community activities, and initiatives focused on safety, health, " +
-          "environment, and community development.\n\n" +
-          "Our goal is to provide accessible and responsive barangay services " +
-          "while encouraging residents to actively participate in building a " +
-          "safe, organized, and progressive community.",
-        quickReplies: [
-          "Our Mission",
-          "Our Vision",
-          "Community Programs",
-          "Contact Us",
-        ],
-      };
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | MISSION
-    |--------------------------------------------------------------------------
-    */
-    if (lowerMessage.includes("mission") || lowerMessage === "our mission") {
-      return {
-        type: "bot",
-        text:
-          "🎯 Our Mission\n\n" +
-          "To provide responsive, accessible, and community-centered barangay " +
-          "services that promote the welfare, safety, and development of residents " +
-          "of Pamplona Uno.\n\n" +
-          "We strive to serve residents with integrity, transparency, respect, " +
-          "and a strong commitment to public service.",
-        quickReplies: [
-          "Our Vision",
-          "Our Values",
-          "Community Programs",
-          "Contact Us",
-        ],
-      };
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | VISION
-    |--------------------------------------------------------------------------
-    */
-    if (lowerMessage.includes("vision") || lowerMessage === "our vision") {
-      return {
-        type: "bot",
-        text:
-          "🌟 Our Vision\n\n" +
-          "A safe, peaceful, inclusive, and progressive Barangay Pamplona Uno " +
-          "where residents, families, organizations, and local leaders work " +
-          "together toward a better quality of life.\n\n" +
-          "We envision a community where public services are accessible, " +
-          "residents are informed and engaged, and community development is " +
-          "supported through cooperation and responsible citizenship.",
-        quickReplies: [
-          "Our Mission",
-          "Our Values",
-          "Community Programs",
-          "Services",
-        ],
-      };
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | VALUES
-    |--------------------------------------------------------------------------
-    */
-    if (lowerMessage.includes("values") || lowerMessage === "our values") {
-      return {
-        type: "bot",
-        text:
-          "💎 Our Community Values\n\n" +
-          "• Malasakit – Caring for residents and the community\n" +
-          "• Integrity – Acting honestly and responsibly\n" +
-          "• Transparency – Promoting clear and accountable public service\n" +
-          "• Unity – Working together for common goals\n" +
-          "• Respect – Treating every resident with dignity\n" +
-          "• Service – Putting community needs at the heart of our work",
-        quickReplies: [
-          "Our Mission",
-          "Our Vision",
-          "Community Programs",
-          "Contact Us",
-        ],
-      };
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | COMMUNITY PROGRAMS
-    |--------------------------------------------------------------------------
-    */
-    if (
-      lowerMessage.includes("program") ||
-      lowerMessage.includes("community programs") ||
-      lowerMessage.includes("activities")
-    ) {
-      return {
-        type: "bot",
-        text:
-          "🤝 Community Programs & Activities\n\n" +
-          "Barangay programs may include:\n\n" +
-          "• Community clean-up and environmental activities\n" +
-          "• Health and wellness programs\n" +
-          "• Senior citizen and PWD assistance\n" +
-          "• Youth and sports development activities\n" +
-          "• Community meetings and assemblies\n" +
-          "• Disaster preparedness activities\n" +
-          "• Livelihood and skills development initiatives\n" +
-          "• School and community coordination\n\n" +
-          "Schedules may vary depending on the program and available resources.",
-        quickReplies: [
-          "Health Services",
-          "Senior & PWD",
-          "Youth Programs",
-          "Emergency",
-        ],
-      };
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | SERVICES
-    |--------------------------------------------------------------------------
-    */
-    if (
-      lowerMessage.includes("service") ||
-      lowerMessage.includes("services") ||
-      lowerMessage === "barangay services"
-    ) {
-      return {
-        type: "bot",
-        text:
-          "🏛️ Barangay Services\n\n" +
-          "Common barangay services include:\n\n" +
-          "📋 Barangay Clearance\n" +
-          "📄 Certificate of Residency\n" +
-          "📄 Certificate of Indigency\n" +
-          "📄 Certificate of Good Moral Character\n" +
-          "🪪 Barangay ID assistance\n" +
-          "🏢 Business permit assistance / barangay endorsement\n" +
-          "📝 Barangay blotter and incident reporting\n" +
-          "⚖️ Community dispute mediation\n" +
-          "👴 Senior citizen assistance\n" +
-          "♿ PWD assistance\n" +
-          "🏥 Health and community wellness programs\n\n" +
-          "Select a service below to learn more.",
-        quickReplies: [
-          "Barangay Clearance",
-          "Residency Certificate",
-          "Indigency Certificate",
-          "Business Permit",
-          "Blotter",
-          "Mediation",
-        ],
-      };
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | REQUIREMENTS
-    |--------------------------------------------------------------------------
-    */
-    if (
-      lowerMessage.includes("requirement") ||
-      lowerMessage.includes("requirements") ||
-      lowerMessage === "documents"
-    ) {
-      return {
-        type: "bot",
-        text:
-          "📑 General Document Requirements\n\n" +
-          "Requirements depend on the service you are requesting. " +
-          "You may commonly be asked to provide:\n\n" +
-          "• Valid government-issued ID\n" +
-          "• Proof of residency\n" +
-          "• Cedula, when applicable\n" +
-          "• Supporting documents related to your request\n" +
-          "• Proof of purpose, when required\n\n" +
-          "Please confirm the specific requirements with the barangay office " +
-          "before visiting, as requirements may vary depending on your request.",
-        quickReplies: [
-          "Barangay Clearance",
-          "Indigency Certificate",
-          "Residency Certificate",
-          "Business Permit",
-        ],
-      };
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | BARANGAY CLEARANCE
-    |--------------------------------------------------------------------------
-    */
-    if (
-      lowerMessage.includes("clearance") ||
-      lowerMessage === "barangay clearance"
-    ) {
-      return {
-        type: "bot",
-        text:
-          "📋 Barangay Clearance\n\n" +
-          "Barangay clearance is commonly requested for employment, business, " +
-          "school, transactions, and other official purposes.\n\n" +
-          "Common requirements may include:\n" +
-          "• Valid ID\n" +
-          "• Proof of residency\n" +
-          "• Cedula, when applicable\n" +
-          "• Purpose of request\n" +
-          "• Applicable processing fee\n\n" +
-          "For the exact requirements, fees, and processing time, please contact " +
-          "the barangay office before visiting.",
-        quickReplies: [
-          "Office Hours",
-          "Contact Us",
-          "Other Services",
-          "Requirements",
-        ],
-      };
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | RESIDENCY
-    |--------------------------------------------------------------------------
-    */
-    if (
-      lowerMessage.includes("residency") ||
-      lowerMessage.includes("residence certificate") ||
-      lowerMessage.includes("certificate of residency")
-    ) {
-      return {
-        type: "bot",
-        text:
-          "🏠 Certificate of Residency\n\n" +
-          "A Certificate of Residency may be requested as proof that a person " +
-          "resides within the barangay.\n\n" +
-          "You may be asked for:\n" +
-          "• Valid ID\n" +
-          "• Proof of address or residency\n" +
-          "• Barangay Clearance, when applicable\n" +
-          "• Purpose of certification\n\n" +
-          "Additional verification may be required depending on your situation.",
-        quickReplies: [
-          "Office Hours",
-          "Contact Us",
-          "Barangay Clearance",
-          "Requirements",
-        ],
-      };
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | INDIGENCY
-    |--------------------------------------------------------------------------
-    */
-    if (
-      lowerMessage.includes("indigency") ||
-      lowerMessage.includes("certificate of indigency")
-    ) {
-      return {
-        type: "bot",
-        text:
-          "📄 Certificate of Indigency\n\n" +
-          "A Certificate of Indigency may be issued to qualified residents " +
-          "for purposes such as medical assistance, educational assistance, " +
-          "legal assistance, and other social support requirements.\n\n" +
-          "Possible requirements include:\n" +
-          "• Valid ID\n" +
-          "• Proof of residency\n" +
-          "• Statement or proof of purpose\n" +
-          "• Supporting documents, when applicable\n\n" +
-          "The barangay may conduct verification or assessment before issuance.",
-        quickReplies: [
-          "Office Hours",
-          "Contact Us",
-          "Other Services",
-          "Requirements",
-        ],
-      };
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | BUSINESS PERMIT
-    |--------------------------------------------------------------------------
-    */
-    if (
-      lowerMessage.includes("business permit") ||
-      lowerMessage.includes("business") ||
-      lowerMessage.includes("permit")
-    ) {
-      return {
-        type: "bot",
-        text:
-          "🏢 Business Permit Assistance\n\n" +
-          "The barangay may assist business owners with barangay clearance " +
-          "or endorsement requirements related to business permit applications.\n\n" +
-          "Common documents may include:\n" +
-          "• Valid ID\n" +
-          "• Business registration documents\n" +
-          "• Proof of business location\n" +
-          "• Barangay clearance requirements\n" +
-          "• Other documents requested by the appropriate office\n\n" +
-          "City permit requirements are handled by the appropriate Las Piñas " +
-          "City office. Please verify current requirements before processing.",
-        quickReplies: [
-          "Office Hours",
-          "Contact Us",
-          "Barangay Services",
-          "Requirements",
-        ],
-      };
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | GOOD MORAL
-    |--------------------------------------------------------------------------
-    */
-    if (
-      lowerMessage.includes("good moral") ||
-      lowerMessage.includes("moral certificate")
-    ) {
-      return {
-        type: "bot",
-        text:
-          "✅ Certificate of Good Moral Character\n\n" +
-          "This certificate may be requested for employment, school, applications, " +
-          "or other official purposes.\n\n" +
-          "You may be asked for:\n" +
-          "• Valid ID\n" +
-          "• Proof of residency\n" +
-          "• Purpose of request\n" +
-          "• Barangay records verification, when applicable\n\n" +
-          "Please contact the barangay office for current requirements and processing details.",
-        quickReplies: ["Office Hours", "Contact Us", "Other Services"],
-      };
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | BARANGAY ID
-    |--------------------------------------------------------------------------
-    */
-    if (lowerMessage.includes("barangay id") || lowerMessage === "id") {
-      return {
-        type: "bot",
-        text:
-          "🪪 Barangay ID Assistance\n\n" +
-          "For Barangay ID-related concerns, please visit the barangay office " +
-          "during designated processing hours.\n\n" +
-          "Bring a valid identification document and proof of residency " +
-          "when available. Additional requirements may apply depending on " +
-          "the type of request.",
-        quickReplies: ["Office Hours", "Contact Us", "Barangay Services"],
-      };
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | CEDULA
-    |--------------------------------------------------------------------------
-    */
-    if (
-      lowerMessage.includes("cedula") ||
-      lowerMessage.includes("community tax certificate")
-    ) {
-      return {
-        type: "bot",
-        text:
-          "📄 Cedula / Community Tax Certificate\n\n" +
-          "For Cedula or Community Tax Certificate concerns, please visit " +
-          "the appropriate barangay or city office handling the transaction.\n\n" +
-          "Bring valid identification and the information needed for the " +
-          "community tax assessment.\n\n" +
-          "Applicable taxes, fees, and requirements depend on the transaction.",
-        quickReplies: ["Office Hours", "Contact Us", "Barangay Services"],
-      };
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | BLOTTER / INCIDENT
-    |--------------------------------------------------------------------------
-    */
-    if (
-      lowerMessage.includes("blotter") ||
-      lowerMessage.includes("incident") ||
-      lowerMessage.includes("report")
-    ) {
-      return {
-        type: "bot",
-        text:
-          "📝 Barangay Blotter & Incident Reporting\n\n" +
-          "Residents may report incidents or community concerns to the barangay " +
-          "for proper recording, assessment, or referral.\n\n" +
-          "Examples include:\n" +
-          "• Neighborhood disputes\n" +
-          "• Disturbances\n" +
-          "• Lost or recovered property\n" +
-          "• Community-related incidents\n" +
-          "• Other concerns within the barangay\n\n" +
-          "Bring a valid ID and any relevant information, documents, or evidence " +
-          "that may help in recording the incident.\n\n" +
-          "🚨 For emergencies or situations requiring immediate assistance, call 911.",
-        quickReplies: ["Emergency", "Mediation", "Contact Us", "Office Hours"],
-      };
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | MEDIATION
-    |--------------------------------------------------------------------------
-    */
-    if (
-      lowerMessage.includes("mediation") ||
-      lowerMessage.includes("lupon") ||
-      lowerMessage.includes("dispute") ||
-      lowerMessage.includes("away")
-    ) {
-      return {
-        type: "bot",
-        text:
-          "⚖️ Community Mediation\n\n" +
-          "The barangay may assist residents in addressing certain community " +
-          "disputes through the appropriate barangay justice and mediation process.\n\n" +
-          "Concerns may involve:\n" +
-          "• Neighbor disputes\n" +
-          "• Property-related disagreements\n" +
-          "• Community conflicts\n" +
-          "• Other disputes covered by the barangay process\n\n" +
-          "Please visit the barangay office to discuss your concern and determine " +
-          "the appropriate procedure.",
-        quickReplies: ["Office Hours", "Contact Us", "Barangay Services"],
-      };
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | HEALTH
-    |--------------------------------------------------------------------------
-    */
-    if (
-      lowerMessage.includes("health") ||
-      lowerMessage.includes("medical") ||
-      lowerMessage.includes("health center")
-    ) {
-      return {
-        type: "bot",
-        text:
-          "🏥 Community Health Services\n\n" +
-          "Barangay health programs may include:\n\n" +
-          "• Basic health consultations\n" +
-          "• Health monitoring\n" +
-          "• Immunization activities\n" +
-          "• Maternal and child health programs\n" +
-          "• Nutrition and wellness activities\n" +
-          "• Health education\n" +
-          "• Community medical missions\n" +
-          "• Dental or specialty services during scheduled activities\n\n" +
-          "Schedules and available services may change depending on the program.",
-        quickReplies: [
-          "Community Programs",
-          "Office Hours",
-          "Contact Us",
-          "Emergency",
-        ],
-      };
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | SENIOR / PWD
-    |--------------------------------------------------------------------------
-    */
-    if (
-      lowerMessage.includes("senior") ||
-      lowerMessage.includes("elderly") ||
-      lowerMessage.includes("pwd") ||
-      lowerMessage.includes("person with disability")
-    ) {
-      return {
-        type: "bot",
-        text:
-          "👴👵♿ Senior Citizen & PWD Assistance\n\n" +
-          "The barangay may provide assistance or referrals for programs intended " +
-          "for senior citizens and persons with disabilities.\n\n" +
-          "Services may include:\n" +
-          "• ID-related assistance\n" +
-          "• Program registration or referrals\n" +
-          "• Access to city or government programs\n" +
-          "• Community assistance activities\n" +
-          "• Information about available benefits\n\n" +
-          "Please bring the necessary identification and supporting documents " +
-          "when visiting the office.",
-        quickReplies: ["Office Hours", "Contact Us", "Community Programs"],
-      };
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | EMERGENCY
-    |--------------------------------------------------------------------------
-    */
-    if (
-      lowerMessage.includes("emergency") ||
-      lowerMessage.includes("hotline") ||
-      lowerMessage.includes("urgent")
-    ) {
-      return {
-        type: "bot",
-        text:
-          "🚨 Emergency Assistance\n\n" +
-          "For immediate emergencies, call 911.\n\n" +
-          "Barangay Contact:\n" +
-          "📞 (02) 8872-9664\n\n" +
-          "For urgent situations involving fire, crime, medical emergencies, " +
-          "or threats to life and safety, contact the appropriate emergency " +
-          "response service immediately.\n\n" +
-          "If the situation is not an emergency, you may contact the barangay " +
-          "office for assistance during office hours.",
-        quickReplies: ["Contact Us", "Office Hours", "Barangay Services"],
-      };
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | CONTACT
-    |--------------------------------------------------------------------------
-    */
-    if (
-      lowerMessage.includes("contact") ||
-      lowerMessage.includes("phone") ||
-      lowerMessage.includes("email") ||
-      lowerMessage === "contact us"
-    ) {
-      return {
-        type: "bot",
-        text:
-          "📞 Contact Barangay Pamplona Uno\n\n" +
-          "Barangay Office\n" +
-          "📍 P1 Metals Rd., Camella 4A\n" +
-          "Las Piñas City, Metro Manila\n\n" +
-          "☎️ Telephone:\n" +
-          "(02) 8872-9664\n\n" +
-          "✉️ Email:\n" +
-          "barangay.pamplonatres.lpc@gmail.com\n\n" +
-          "For urgent emergencies, please call 911.",
-        quickReplies: [
-          "Office Hours",
-          "Visit Us",
-          "Emergency",
-          "Barangay Services",
-        ],
-      };
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | VISIT
-    |--------------------------------------------------------------------------
-    */
-    if (
-      lowerMessage.includes("visit") ||
-      lowerMessage.includes("location") ||
-      lowerMessage.includes("address") ||
-      lowerMessage === "visit us"
-    ) {
-      return {
-        type: "bot",
-        text:
-          "📍 Visit Barangay Pamplona Uno\n\n" +
-          "Barangay Pamplona Uno Office\n" +
-          "P1 Metals Rd., Camella 4A\n" +
-          "Las Piñas City, Metro Manila\n\n" +
-          "Residents may visit the barangay office for inquiries, document " +
-          "requests, community concerns, and available public services.\n\n" +
-          "Please check office hours before visiting.",
-        quickReplies: ["Office Hours", "Contact Us", "Barangay Services"],
-      };
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | OFFICE HOURS
-    |--------------------------------------------------------------------------
-    */
-    if (
-      lowerMessage.includes("hours") ||
-      lowerMessage.includes("office hours") ||
-      lowerMessage.includes("time") ||
-      lowerMessage.includes("schedule")
-    ) {
-      return {
-        type: "bot",
-        text:
-          "🕐 Barangay Office Hours\n\n" +
-          "Monday to Friday\n" +
-          "8:00 AM – 5:00 PM\n\n" +
-          "Some services, programs, and special activities may follow different " +
-          "schedules.\n\n" +
-          "For emergencies outside regular office hours, please call 911 or " +
-          "the appropriate emergency response service.",
-        quickReplies: [
-          "Contact Us",
-          "Visit Us",
-          "Barangay Services",
-          "Emergency",
-        ],
-      };
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | THANK YOU
-    |--------------------------------------------------------------------------
-    */
-    if (
-      lowerMessage.includes("thank") ||
-      lowerMessage.includes("salamat") ||
-      lowerMessage.includes("thanks")
-    ) {
-      return {
-        type: "bot",
-        text:
-          "Walang anuman! 😊\n\n" +
-          "I'm glad I could help. If you have another question about " +
-          "Barangay Pamplona Uno, feel free to ask anytime.\n\n" +
-          "Mabuhay ang Pamplona Uno! 🤝",
-        quickReplies: [
-          "Barangay Services",
-          "Contact Us",
-          "Office Hours",
-          "Emergency",
-        ],
-      };
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | DEFAULT RESPONSE
-    |--------------------------------------------------------------------------
-    */
-    return {
-      type: "bot",
-      text:
-        "Thank you for reaching out! 😊\n\n" +
-        "I can currently help with:\n\n" +
-        "🏛️ Barangay Services\n" +
-        "📑 Requirements\n" +
-        "🕐 Office Hours\n" +
-        "📍 Office Location\n" +
-        "📞 Contact Information\n" +
-        "🏥 Health Services\n" +
-        "👴 Senior Citizen & PWD Assistance\n" +
-        "⚖️ Community Mediation\n" +
-        "🚨 Emergency Information\n" +
-        "🤝 Community Programs\n\n" +
-        "Please choose a topic below or type your question.",
-      quickReplies: [
-        "Barangay Services",
-        "Requirements",
-        "Office Hours",
-        "Contact Us",
-        "Emergency",
-        "Community Programs",
-      ],
-    };
   };
 
   return (

@@ -11,21 +11,41 @@ import {
   Send,
   ExternalLink,
   MessageCircle,
+  Globe,
 } from "lucide-react";
 import PageLayout from "@/components/page-layout";
 import Link from "next/link";
 import { useState } from "react";
 
+/* ------------------------------------------------------------------
+   Barangay Pamplona Uno contact data (single source of truth)
+   Verify phone/email with the barangay hall before going live.
+------------------------------------------------------------------- */
+const CONTACT = {
+  name: "Barangay Pamplona Uno",
+  address:
+    "Real St., cor. Alabang-Zapote Rd., Pamplona Uno, Las Piñas City, Metro Manila",
+  phoneDisplay: "(02) 8871-2771",
+  phoneHref: "tel:+63288712771",
+  email: "", // <-- add the official barangay email here to show the Email card
+  facebookUrl: "https://www.facebook.com/KapReinier/",
+  hours: "Monday – Friday • 8:00 AM – 5:00 PM",
+  mapsLink:
+    "https://www.google.com/maps/search/?api=1&query=Pamplona+Uno+Barangay+Hall+Las+Pi%C3%B1as",
+  mapsEmbed:
+    "https://www.google.com/maps?q=Pamplona+Uno+Barangay+Hall,+Real+St,+Las+Pi%C3%B1as&output=embed",
+};
+
 function Map() {
   return (
     <div className="relative w-full h-[420px] md:h-[500px] overflow-hidden rounded-2xl">
       <iframe
-        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3863.5080063712476!2d120.97978174729064!3d14.455493844679417!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3397cde32848c3d7%3A0xeeaef0ae39538a8b!2s1%20Metals%20Rd%2C%20Las%20Pi%C3%B1as%2C%201750%20Metro%20Manila!5e0!3m2!1sen!2sph!4v1763974724562!5m2!1sen!2sph"
+        src={CONTACT.mapsEmbed}
         className="absolute inset-0 w-full h-full border-0"
         allowFullScreen
         loading="lazy"
         referrerPolicy="no-referrer-when-downgrade"
-        title="Pamplona Uno Barangay Office Location"
+        title="Pamplona Uno Barangay Hall Location"
       />
 
       {/* Map overlay label */}
@@ -37,11 +57,9 @@ function Map() {
             </div>
 
             <div>
-              <p className="font-bold text-gray-900 text-sm">
-                Barangay Pamplona Uno
-              </p>
+              <p className="font-bold text-gray-900 text-sm">{CONTACT.name}</p>
               <p className="text-gray-600 text-xs leading-relaxed mt-1">
-                P1 Metals Rd., Camella 4A, Las Piñas City, Metro Manila
+                {CONTACT.address}
               </p>
             </div>
           </div>
@@ -163,31 +181,44 @@ export default function ContactPage() {
     {
       icon: MapPin,
       title: "Office Location",
-      details: "P1 Metals Rd., Camella 4A, Las Piñas City, Metro Manila",
-      description: "Visit the barangay office during office hours.",
-      link: "https://maps.app.goo.gl/8kzbXckLdXSNE96z5",
+      details: CONTACT.address,
+      description: "Visit the barangay hall during office hours.",
+      link: CONTACT.mapsLink,
       isExternal: true,
     },
     {
       icon: Phone,
       title: "Phone",
-      details: "(02) 8872-9664",
+      details: CONTACT.phoneDisplay,
       description: "Call us for general barangay inquiries.",
-      link: "tel:+63288729664",
+      link: CONTACT.phoneHref,
       isExternal: false,
     },
+    // Email card only shows once CONTACT.email is filled in
+    ...(CONTACT.email
+      ? [
+          {
+            icon: Mail,
+            title: "Email",
+            details: CONTACT.email,
+            description: "Send us your questions or concerns.",
+            link: `mailto:${CONTACT.email}`,
+            isExternal: false,
+          },
+        ]
+      : []),
     {
-      icon: Mail,
-      title: "Email",
-      details: "barangay.pamplonatres.lpc@gmail.com",
-      description: "Send us your questions or concerns.",
-      link: "mailto:barangay.pamplonatres.lpc@gmail.com",
-      isExternal: false,
+      icon: Globe,
+      title: "Facebook Page",
+      details: "Barangay Pamplona Uno",
+      description: "Follow our official page for announcements and updates.",
+      link: CONTACT.facebookUrl,
+      isExternal: true,
     },
     {
       icon: Clock,
       title: "Office Hours",
-      details: "Monday – Friday • 8:00 AM – 5:00 PM",
+      details: CONTACT.hours,
       description: "Please check official announcements for holiday schedules.",
       link: null,
       isExternal: false,
@@ -197,7 +228,7 @@ export default function ContactPage() {
   return (
     <PageLayout
       title="Contact Us"
-      subtitle="Get in touch with pamplona Uno Community"
+      subtitle="Get in touch with the Pamplona Uno Community"
       image="https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=2000&q=90"
     >
       {/* Contact Introduction */}
@@ -255,11 +286,7 @@ export default function ContactPage() {
                   </motion.div>
                 )}
 
-                <form
-                  className="space-y-5"
-                  onSubmit={handleSubmit}
-                  noValidate
-                >
+                <form className="space-y-5" onSubmit={handleSubmit} noValidate>
                   {/* Name */}
                   <div>
                     <label
@@ -458,7 +485,6 @@ export default function ContactPage() {
                             d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                           />
                         </svg>
-
                         Sending Message...
                       </>
                     ) : (
@@ -470,8 +496,8 @@ export default function ContactPage() {
                   </button>
 
                   <p className="text-xs text-gray-400 text-center leading-relaxed">
-                    Please avoid including passwords, financial information,
-                    or other sensitive personal information in your message.
+                    Please avoid including passwords, financial information, or
+                    other sensitive personal information in your message.
                   </p>
                 </form>
               </div>
@@ -516,9 +542,7 @@ export default function ContactPage() {
                         {item.link ? (
                           <a
                             href={item.link}
-                            target={
-                              item.isExternal ? "_blank" : undefined
-                            }
+                            target={item.isExternal ? "_blank" : undefined}
                             rel={
                               item.isExternal
                                 ? "noopener noreferrer"
@@ -588,7 +612,7 @@ export default function ContactPage() {
           >
             <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
               <a
-                href="https://maps.app.goo.gl/8kzbXckLdXSNE96z5"
+                href={CONTACT.mapsLink}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-full border-2 border-brand-secondary-600 text-brand-secondary-600 font-bold hover:bg-brand-secondary-600 hover:text-white transition-colors"
@@ -631,9 +655,9 @@ export default function ContactPage() {
             </h2>
 
             <p className="text-gray-600 text-lg leading-relaxed mt-5 max-w-3xl mx-auto">
-              Save time by using our online citizen services. Create an
-              account to submit requests, monitor applications, and access
-              available barangay services from anywhere.
+              Save time by using our online citizen services. Create an account
+              to submit requests, monitor applications, and access available
+              barangay services from anywhere.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8">
