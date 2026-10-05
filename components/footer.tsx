@@ -1,14 +1,14 @@
-"use client"
+"use client";
 
-import { motion } from "framer-motion"
-import Link from "next/link"
-import { Mail, Phone, MapPin, Facebook, Instagram } from "lucide-react"
+import { motion } from "framer-motion";
+import Link from "next/link";
+import { Mail, Phone, MapPin, Facebook, Instagram } from "lucide-react";
 
 export default function Footer() {
   return (
     <footer className="bg-gray-900 text-white relative overflow-hidden">
       <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-brand-primary-500 via-brand-secondary-500 to-brand-accent-500" />
-      
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-16">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 md:gap-8 mb-8 md:mb-12">
           {/* Brand */}
@@ -26,10 +26,10 @@ export default function Footer() {
             <p className="text-gray-400 text-sm leading-relaxed mb-4">
               Delivering quality government services to Las Piñas City residents
             </p>
-            
+
             <div className="flex gap-3">
               <a
-                href="https://www.facebook.com/ilovepamplonatres"
+                href="https://www.facebook.com/KapReinier/"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-9 h-9 md:w-10 md:h-10 rounded-full bg-gray-800 hover:bg-gradient-to-r hover:from-brand-primary-500 hover:via-brand-secondary-500 hover:to-brand-accent-500 flex items-center justify-center transition-all"
@@ -37,7 +37,7 @@ export default function Footer() {
                 <Facebook className="w-4 h-4 md:w-5 md:h-5" />
               </a>
               <a
-                href="https://www.instagram.com/explore/locations/1034521926/barangay-pamplona-tres/"
+                href="https://www.instagram.com/explore/locations/1335973839861407/pamplona-1-las-pinas-city/"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-9 h-9 md:w-10 md:h-10 rounded-full bg-gray-800 hover:bg-gradient-to-r hover:from-brand-primary-500 hover:via-brand-secondary-500 hover:to-brand-accent-500 flex items-center justify-center transition-all"
@@ -54,7 +54,9 @@ export default function Footer() {
             transition={{ delay: 0.1 }}
             viewport={{ once: true }}
           >
-            <h4 className="font-bold mb-3 md:mb-4 text-base md:text-lg">Navigation</h4>
+            <h4 className="font-bold mb-3 md:mb-4 text-base md:text-lg">
+              Navigation
+            </h4>
             <ul className="space-y-2">
               {[
                 { label: "Home", href: "/" },
@@ -84,7 +86,9 @@ export default function Footer() {
             transition={{ delay: 0.2 }}
             viewport={{ once: true }}
           >
-            <h4 className="font-bold mb-3 md:mb-4 text-base md:text-lg">Legal</h4>
+            <h4 className="font-bold mb-3 md:mb-4 text-base md:text-lg">
+              Legal
+            </h4>
             <ul className="space-y-2">
               {[
                 { label: "Terms of Service", href: "/terms" },
@@ -111,7 +115,9 @@ export default function Footer() {
             transition={{ delay: 0.3 }}
             viewport={{ once: true }}
           >
-            <h4 className="font-bold mb-3 md:mb-4 text-base md:text-lg">Contact Us</h4>
+            <h4 className="font-bold mb-3 md:mb-4 text-base md:text-lg">
+              Contact Us
+            </h4>
             <ul className="space-y-3">
               <li className="flex items-start gap-2 md:gap-3 group">
                 <div className="w-7 h-7 md:w-8 md:h-8 rounded-lg bg-gray-800 flex items-center justify-center flex-shrink-0 group-hover:bg-gradient-to-r group-hover:from-brand-primary-500 group-hover:via-brand-secondary-500 group-hover:to-brand-accent-500 transition-all">
@@ -121,7 +127,7 @@ export default function Footer() {
                   href="tel:(02) 8872-9664"
                   className="text-gray-300 text-sm hover:text-brand-secondary-400 transition-colors"
                 >
-                 (02) 8872-9664
+                  (02) 8872-9664
                 </a>
               </li>
 
@@ -158,7 +164,8 @@ export default function Footer() {
         <div className="border-t border-gray-800 pt-6 md:pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center gap-3 md:gap-4">
             <p className="text-gray-400 text-xs md:text-sm text-center md:text-left">
-              © {new Date().getFullYear()} Barangay Pamplona Uno, Las Piñas City. All rights reserved.
+              © {new Date().getFullYear()} Barangay Pamplona Uno, Las Piñas
+              City. All rights reserved.
             </p>
             <div className="flex items-center gap-2">
               <span className="text-gray-500 text-xs">Powered by</span>
@@ -175,5 +182,5 @@ export default function Footer() {
         </div>
       </div>
     </footer>
-  )
+  );
 }

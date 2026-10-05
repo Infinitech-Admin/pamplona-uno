@@ -49,7 +49,7 @@ const heroVideos = [
   "/videos/hero-3.mp4",
 ];
 
-const heroText = "Welcome to Pamplona Tres";
+const heroText = "Welcome to Pamplona Uno";
 const TYPE_SPEED_MS = 65; // per character
 const HOLD_MS = 1400; // how long the finished text stays before fading
 
@@ -408,7 +408,7 @@ export default function Home() {
               <div className="relative rounded-3xl overflow-hidden shadow-2xl aspect-[4/3]">
                 <img
                   src="/images/meeting/1.jpg"
-                  alt="Barangay Pamplona Tres"
+                  alt="Barangay Pamplona Uno"
                   className="w-full h-full object-cover"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
@@ -436,7 +436,7 @@ export default function Home() {
               className="order-1 lg:order-2"
             >
               <span className="inline-block text-[#b3203a] font-semibold uppercase tracking-wide text-sm mb-3">
-                Barangay Pamplona Tres
+                Barangay Pamplona Uno
               </span>
               <h2 className="text-4xl md:text-5xl font-bold mb-6 leading-tight">
                 <span className="text-[#2f3e5c]">
@@ -444,7 +444,7 @@ export default function Home() {
                 </span>
               </h2>
               <p className="text-lg text-gray-700 leading-relaxed mb-8 font-medium">
-                Nestled in the vibrant City of Las Piñas, Barangay Pamplona Tres
+                Nestled in the vibrant City of Las Piñas, Barangay Pamplona Uno
                 is a thriving community where tradition, service, and progress
                 come together. Home to thousands of residents, our barangay is
                 committed to creating a safe, inclusive, and welcoming
@@ -518,9 +518,7 @@ export default function Home() {
             className="mb-16 text-center"
           >
             <h2 className="text-4xl md:text-5xl font-bold mb-4">
-              <span className="text-[#2f3e5c]">
-                Latest Updates
-              </span>
+              <span className="text-[#2f3e5c]">Latest Updates</span>
             </h2>
             <div className="w-32 h-1.5 bg-[linear-gradient(to_right,#2f3e5c,#b3203a,#b8693a)] rounded-full mx-auto mb-4" />
             <p className="text-lg text-gray-700 max-w-2xl mx-auto font-medium">
